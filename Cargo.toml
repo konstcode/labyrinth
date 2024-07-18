@@ -1,0 +1,7 @@
+[package]
+name = "labyrinth"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rusty_engine = "6.0.0"
