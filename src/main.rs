@@ -19,6 +19,11 @@ fn translate_titling_to_marble(tilting_vec: Vec2, marble_center: Vec2) -> Vec2 {
     tilting_vec + translation
 }
 
+// linear interpolation,
+fn lerp(old_position: Vec2, new_position: Vec2, delta_time: f32) -> Vec2 {
+    old_position + delta_time * (new_position - old_position)
+}
+
 const MARBLE_RATE: f32 = 50.0;
 const MAX_TITLING: f32 = 500.0;
 const MIN_TITLING: f32 = 50.0;
@@ -47,15 +52,16 @@ fn main() {
 fn game_logic(engine: &mut Engine, game_state: &mut GameState) {
     let marble = engine.sprites.get_mut("marble").unwrap();
 
+    // limit tilting vector
     if let Some(location) = engine.mouse_state.location() {
         if location.length() < MIN_TITLING {
             game_state.tilting_vec = Vec2::new(0.0, 0.0);
         } else if location.x > MAX_TITLING {
-            game_state.tilting_vec.x = location.x / location.x.abs() * MAX_TITLING / MARBLE_RATE;
+            game_state.tilting_vec.x = location.x / location.x.abs() * MAX_TITLING;
         } else if location.y > MAX_TITLING {
-            game_state.tilting_vec.y = location.y / location.y.abs() * MAX_TITLING / MARBLE_RATE;
+            game_state.tilting_vec.y = location.y / location.y.abs() * MAX_TITLING;
         } else {
-            game_state.tilting_vec = location / MARBLE_RATE;
+            game_state.tilting_vec = location;
         }
     }
 
@@ -68,11 +74,15 @@ fn game_logic(engine: &mut Engine, game_state: &mut GameState) {
     } else {
         marble.rotation
     };
-    marble.translation = game_state.marble_vec
-        + engine.delta_f32 * (game_state.marble_center - game_state.marble_vec);
-    game_state.marble_center = game_state.marble_vec;
 
-    if marble.translation.length() > engine.window_dimensions.length() {
+    game_state.marble_center = lerp(
+        game_state.marble_center,
+        game_state.marble_vec,
+        engine.delta_f32,
+    );
+    marble.translation = game_state.marble_center;
+
+    if marble.translation.length() > engine.window_dimensions.length() / 2.0 {
         game_state.marble_center = Vec2::new(100.0, 200.0);
     }
 }
