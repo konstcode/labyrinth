@@ -19,12 +19,11 @@ fn translate_titling_to_marble(tilting_vec: Vec2, marble_center: Vec2) -> Vec2 {
     tilting_vec + translation
 }
 
-// linear interpolation,
+// linear interpolation, of begin and end of vector
 fn lerp(old_position: Vec2, new_position: Vec2, delta_time: f32) -> Vec2 {
     old_position + delta_time * (new_position - old_position)
 }
 
-const MARBLE_RATE: f32 = 50.0;
 const MAX_TITLING: f32 = 500.0;
 const MIN_TITLING: f32 = 50.0;
 
@@ -41,6 +40,7 @@ fn main() {
     let marble = game.sprites.get_mut("marble").unwrap();
     marble.translation = game_state.marble_vec;
 
+    // hole to show the middle - safe zone for mouse
     let _ = game.add_sprite("hole", SpritePreset::RollingHoleStart);
     let center = game.sprites.get_mut("hole").unwrap();
     center.translation = Vec2::new(0.0, 0.0);
@@ -52,7 +52,7 @@ fn main() {
 fn game_logic(engine: &mut Engine, game_state: &mut GameState) {
     let marble = engine.sprites.get_mut("marble").unwrap();
 
-    // limit tilting vector
+    // limit tilting vector max and min
     if let Some(location) = engine.mouse_state.location() {
         if location.length() < MIN_TITLING {
             game_state.tilting_vec = Vec2::new(0.0, 0.0);
@@ -65,6 +65,7 @@ fn game_logic(engine: &mut Engine, game_state: &mut GameState) {
         }
     }
 
+    // translate titling board vector to new marble center vector
     game_state.marble_vec =
         translate_titling_to_marble(game_state.tilting_vec, game_state.marble_center);
 
