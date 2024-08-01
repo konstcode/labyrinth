@@ -39,11 +39,13 @@ fn main() {
     let _ = game.add_sprite("marble", SpritePreset::RollingBallBlue);
     let marble = game.sprites.get_mut("marble").unwrap();
     marble.translation = game_state.marble_vec;
+    marble.collision = true;
 
     // hole to show the middle - safe zone for mouse
     let _ = game.add_sprite("hole", SpritePreset::RollingHoleStart);
     let center = game.sprites.get_mut("hole").unwrap();
     center.translation = Vec2::new(0.0, 0.0);
+    center.collision = true;
 
     game.add_logic(game_logic);
     game.run(game_state);
@@ -76,6 +78,7 @@ fn game_logic(engine: &mut Engine, game_state: &mut GameState) {
         marble.rotation
     };
 
+    // interpolate marble vector to time of frame
     game_state.marble_center = lerp(
         game_state.marble_center,
         game_state.marble_vec,
@@ -85,5 +88,19 @@ fn game_logic(engine: &mut Engine, game_state: &mut GameState) {
 
     if marble.translation.length() > engine.window_dimensions.length() / 2.0 {
         game_state.marble_center = Vec2::new(100.0, 200.0);
+    }
+
+    let mut text: String;
+    // If a collision event happened last frame, print it out and play a sound
+    for collision_event in engine.collision_events.drain(..) {
+        match collision_event.state {
+            CollisionState::Begin => {
+                text = format!("{:?}", collision_event);
+            }
+            CollisionState::End => {
+                text = format!("{:?}", collision_event);
+            }
+        }
+        warn!("{}", text);
     }
 }
